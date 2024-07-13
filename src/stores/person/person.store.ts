@@ -21,6 +21,9 @@ const storeApi: StateCreator<PersonState & PersonActions, [['zustand/devtools', 
 });
 
 export const usePersonStore = create<PersonState & PersonActions>()(
+  // logger(
+
+  // )
   devtools(
     persist(storeApi, {
       name: 'person-store',
