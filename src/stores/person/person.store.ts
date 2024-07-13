@@ -1,5 +1,5 @@
 import { create, StateCreator } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { firebaseStorage } from '../storages/firebase.storage';
 
 interface PersonState {
@@ -12,18 +12,20 @@ interface PersonActions {
   setLastName: (value: string) => void;
 }
 
-const storeApi: StateCreator<PersonState & PersonActions> = (set) => ({
+const storeApi: StateCreator<PersonState & PersonActions, [['zustand/devtools', never]]> = (set) => ({
   firstName: '',
   lastName: '',
 
-  setFirstName: (value: string) => set((state) => ({ firstName: value })),
-  setLastName: (value: string) => set((state) => ({ lastName: value })),
+  setFirstName: (value: string) => set({ firstName: value }, false, 'setFirstName'),
+  setLastName: (value: string) => set({ lastName: value }, false, 'setLastName'),
 });
 
 export const usePersonStore = create<PersonState & PersonActions>()(
-  persist(storeApi, {
-    name: 'person-store',
-    // storage: customSessionStorage,
-    storage: firebaseStorage,
-  })
+  devtools(
+    persist(storeApi, {
+      name: 'person-store',
+      // storage: customSessionStorage,
+      storage: firebaseStorage,
+    })
+  )
 );
