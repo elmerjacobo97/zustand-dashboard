@@ -3,12 +3,20 @@ import { Task, TaskStatus } from '../../interfaces';
 import { devtools } from 'zustand/middleware';
 
 interface TaskState {
+  draggingTaskId?: string;
   tasks: Record<string, Task>; // <-- { [key: string]: Task }
 
   getTypeByStatus: (status: TaskStatus) => Task[];
+
+  setDraggingTaskId: (taskId: string) => void;
+  removeDraggingTaskId: () => void;
+
+  changeTaskStatus: (taskId: string, status: TaskStatus) => void;
+  onTaskDrop: (status: TaskStatus) => void;
 }
 
 const storeApi: StateCreator<TaskState> = (set, get) => ({
+  draggingTaskId: undefined,
   tasks: {
     '1': {
       id: '1',
@@ -35,6 +43,22 @@ const storeApi: StateCreator<TaskState> = (set, get) => ({
   getTypeByStatus: (status: TaskStatus) => {
     const tasks = Object.values(get().tasks);
     return tasks.filter((task) => task.status === status);
+  },
+
+  setDraggingTaskId: (taskId: string) => set({ draggingTaskId: taskId }),
+  removeDraggingTaskId: () => set({ draggingTaskId: undefined }),
+
+  changeTaskStatus: (taskId: string, status: TaskStatus) => {
+    const task = get().tasks[taskId];
+    task.status = status;
+    set((state) => ({ tasks: { ...state.tasks, [taskId]: task } }));
+  },
+  onTaskDrop: (status: TaskStatus) => {
+    const taskId = get().draggingTaskId;
+    if (taskId) {
+      get().changeTaskStatus(taskId, status);
+      get().removeDraggingTaskId();
+    }
   },
 });
 
