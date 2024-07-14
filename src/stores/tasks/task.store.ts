@@ -2,6 +2,7 @@ import { create, StateCreator } from 'zustand';
 import { Task, TaskStatus } from '../../interfaces';
 import { devtools } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
+import { produce } from 'immer'; // <-- mutation state
 
 interface TaskState {
   draggingTaskId?: string;
@@ -52,7 +53,16 @@ const storeApi: StateCreator<TaskState> = (set, get) => ({
       title,
       status,
     };
-    set((state) => ({ tasks: { ...state.tasks, [newTask.id]: newTask } }));
+
+    // ! add new task with spread operator
+    // set((state) => ({ tasks: { ...state.tasks, [newTask.id]: newTask } }));
+
+    // ! add new task with immer(produce) mutation state
+    set(
+      produce((state: TaskState) => {
+        state.tasks[newTask.id] = newTask;
+      })
+    );
   },
 
   setDraggingTaskId: (taskId: string) => set({ draggingTaskId: taskId }),
