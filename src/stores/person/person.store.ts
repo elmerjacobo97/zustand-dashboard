@@ -1,5 +1,6 @@
 import { create, StateCreator } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { useWeddingBoundStore } from '../wedding';
 // import { firebaseStorage } from '../storages/firebase.storage';
 
 interface PersonState {
@@ -32,3 +33,12 @@ export const usePersonStore = create<PersonState & PersonActions>()(
     })
   )
 );
+
+// Comunicación con entre stores (personStore -> useWeddingBoundStore)
+
+usePersonStore.subscribe((nextState /* previousState */) => {
+  // console.log('usePersonStore.subscribe', nextState, previousState);
+  const { firstName, lastName } = nextState;
+  useWeddingBoundStore.getState().setFirstName(firstName);
+  useWeddingBoundStore.getState().setLastName(lastName);
+});
